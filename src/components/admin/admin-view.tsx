@@ -8,7 +8,6 @@ import { Button } from '@/components/ui/button';
 import { auth } from '@/lib/firebase';
 import { ThemeToggleButton } from '@/components/shared/theme-toggle-button';
 import AdminDashboard from './admin-dashboard';
-import AuditDashboard from './audit-dashboard';
 import ModalManager from '@/components/shared/modal-manager';
 import type { Agent, CoachingSession, PerformancePlan, Warning } from '@/lib/types';
 import DashboardStats from '@/components/shared/dashboard-stats';
@@ -191,7 +190,6 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
                         <Button onClick={() => setView('dashboard')} variant={view === 'dashboard' ? 'secondary': 'ghost'} className="w-full justify-start">Dashboard</Button>
                         <Button onClick={() => setView('tracker')} variant={view === 'tracker' ? 'secondary': 'ghost'} className="w-full justify-start">Agents</Button>
                         <Button onClick={() => setView('performance')} variant={view === 'performance' ? 'secondary': 'ghost'} className="w-full justify-start">Performance</Button>
-                        <Button onClick={() => setView('audits')} variant={view === 'audits' ? 'secondary': 'ghost'} className="w-full justify-start">Audits</Button>
                    </div>
                   {view === 'tracker' && (
                       <nav className="space-y-1 overflow-y-auto">
@@ -230,7 +228,6 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
               </aside>
               <main className="flex-1 p-4 md:p-8 overflow-auto">
                   {view === 'dashboard' && <AdminDashboard agents={agents} setSelectedAgent={setSelectedAgent} setView={setView} setAgentDetailView={setAgentDetailView} selectedMonth={selectedMonth} setSelectedMonth={setSelectedMonth} selectedYear={selectedYear} setSelectedYear={setSelectedYear} setExpandedTeams={setExpandedTeams} openModal={openModal} />}
-                  {view === 'audits' && <AuditDashboard agents={agents} user={user} />}
                   {view === 'performance' && <PerformanceDashboard agents={agents} setView={setView} setSelectedAgent={setSelectedAgent} setAgentDetailView={setAgentDetailView} setExpandedTeams={setExpandedTeams} />}
                   {view === 'tracker' && ( selectedAgent ? (
                       <div>

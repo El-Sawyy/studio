@@ -200,7 +200,7 @@ export default function AgentView({ user, agentId }: { user: User, agentId: stri
                                     </div>
                                 )}
                                 {filteredCoachingSessions.length > 0 ? filteredCoachingSessions.map(session => (
-                                    <CoachingListItem key={session.id} doc={session} onView={() => openModal('VIEW_COACHING', session)} user={user} userRole="agent" agentId={agentId} openModal={openModal} closeModal={closeModal}/>
+                                    <CoachingListItem key={session.id} doc={session} onView={() => openModal('VIEW_COACHING', session)} user={user} />
                                 )) : <p className="p-4 text-muted-foreground text-center">You have no coaching sessions for the selected period.</p>}
                               </CardContent>
                           </Card>

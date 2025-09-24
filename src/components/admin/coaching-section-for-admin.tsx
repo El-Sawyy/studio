@@ -63,13 +63,8 @@ export function CoachingSectionForAdmin({ user, userRole, agentId, coachingSessi
                                 doc={session} 
                                 onEdit={() => openModal('EDIT_COACHING', session)} 
                                 onView={() => openModal('VIEW_COACHING', session)} 
-                                onDelete={() => handleDelete('coaching', session.id)} 
-                                onScore={() => openModal('SCORE_COACHING', session)}
-                                userRole={userRole} 
-                                user={user} 
-                                agentId={agentId} 
-                                openModal={openModal}
-                                closeModal={() => openModal('')}
+                                onDelete={() => handleDelete('coaching', session.id)}
+                                user={user}
                             />
                         ))}
                     </div>

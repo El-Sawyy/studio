@@ -7,7 +7,6 @@ import AgentForm from '@/components/forms/agent-form';
 import PlanForm from '@/components/forms/plan-form';
 import WarningForm from '@/components/forms/warning-form';
 import CoachingForm from '@/components/forms/coaching-form';
-import CoachingTriadForm from '@/components/forms/coaching-triad-form';
 import DocumentViewer from './document-viewer';
 import CoachingViewer from './coaching-viewer';
 import CoachDetailsViewer from './coach-details-viewer';
@@ -30,7 +29,6 @@ export default function ModalManager({ modal, closeModal, handleSaveData, select
         'EDIT_PLAN': modal.data?.id ? 'Edit Plan' : 'Create New Plan',
         'EDIT_WARNING': modal.data?.id ? 'Edit Warning' : 'Create New Warning',
         'EDIT_COACHING': modal.data?.id ? 'Edit Coaching Session' : 'Create Coaching Session',
-        'SCORE_COACHING': 'Coaching Triad Scorecard',
         'VIEW_PLAN': `Viewing Plan: ${modal.data?.type}`,
         'VIEW_WARNING': `Viewing Warning: ${modal.data?.type}`,
         'VIEW_COACHING': `Viewing Session: ${new Date(modal.data?.date).toLocaleDateString()}`,
@@ -38,7 +36,7 @@ export default function ModalManager({ modal, closeModal, handleSaveData, select
         'CONFIRM_DELETE': modal.data?.title || 'Confirm Deletion',
     };
     
-    const isLargeModal = modal.type.startsWith('VIEW') || modal.type === 'SCORE_COACHING' || modal.type === 'EDIT_PLAN';
+    const isLargeModal = modal.type.startsWith('VIEW') || modal.type === 'EDIT_PLAN';
 
     return (
         <Dialog open={modal.isOpen} onOpenChange={closeModal}>
@@ -51,7 +49,6 @@ export default function ModalManager({ modal, closeModal, handleSaveData, select
                     {handleSaveData && modal.type === 'EDIT_PLAN' && <PlanForm onSubmit={(data) => handleSaveData('plan', {...data, id: modal.data?.id})} onCancel={closeModal} initialData={modal.data} />}
                     {handleSaveData && modal.type === 'EDIT_WARNING' && <WarningForm onSubmit={(data) => handleSaveData('warning', {...data, id: modal.data?.id})} onCancel={closeModal} initialData={modal.data} />}
                     {handleSaveData && modal.type === 'EDIT_COACHING' && <CoachingForm onSubmit={(data) => handleSaveData('coaching', {...data, id: modal.data?.id})} onCancel={closeModal} initialData={modal.data} />}
-                    {selectedAgent && modal.type === 'SCORE_COACHING' && <CoachingTriadForm session={modal.data} agentId={selectedAgent.id} onCancel={closeModal} user={user} />}
                     
                     {modal.type === 'COACH_DETAILS' && <CoachDetailsViewer data={modal.data} />}
 

@@ -66,15 +66,6 @@ export interface CoachingSession {
     nextSteps?: string;
     createdBy: string;
     lastModifiedBy?: string;
-    triadScore?: TriadScore;
-}
-
-export interface TriadScore {
-    answers: string[];
-    totalScore: number;
-    auditorEmail: string;
-    comment: string;
-    scoredAt: string;
 }
 
 export interface Signature {

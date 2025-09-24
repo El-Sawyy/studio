@@ -4,7 +4,6 @@ import { useState } from 'react';
 import type { User } from 'firebase/compat/app';
 import { Button } from '@/components/ui/button';
 import { Clipboard } from 'lucide-react';
-import { AUDITOR_EMAILS, TRIAD_QUESTIONS } from '@/lib/constants';
 import type { CoachingSession } from '@/lib/types';
 import { Badge } from '../ui/badge';
 
@@ -29,8 +28,6 @@ const renderSection = (title: string, content: string | undefined) => (
 
 export default function CoachingViewer({ data, user }: CoachingViewerProps) {
     const [copySuccess, setCopySuccess] = useState('');
-    const isAuditor = user.email && AUDITOR_EMAILS.includes(user.email);
-    const isOwner = user.email === data.createdBy;
 
     const richTextToPlain = (html: string | undefined): string => {
         if (!html) return '';
@@ -88,21 +85,6 @@ ${data.nextSteps ? `--- NEXT STEPS ---\n${richTextToPlain(data.nextSteps)}\n` : 
                     {renderSection("Action Plan", data.actionPlan)}
                     {renderSection("Notes", data.notes)}
                 </>
-            )}
-            
-            {(isAuditor || isOwner) && data.triadScore && (
-                <div className="mt-6">
-                    <h4 className="text-lg font-bold border-b pb-1 mb-2">Triad Score: {data.triadScore.totalScore}% by {data.triadScore.auditorEmail}</h4>
-                    {data.triadScore.comment && <div className="p-3 bg-muted rounded-md mb-2 italic">"{data.triadScore.comment}"</div>}
-                    <div className="space-y-2">
-                        {TRIAD_QUESTIONS.map((q, i) => (
-                            <div key={i} className="flex justify-between items-center text-sm">
-                                <p>{q.question}</p>
-                                <Badge variant={data.triadScore!.answers[i] === 'Yes' ? 'default' : 'destructive'}>{data.triadScore!.answers[i]}</Badge>
-                            </div>
-                        ))}
-                    </div>
-                </div>
             )}
 
             <div className="flex justify-end mt-6 pt-4 border-t">
