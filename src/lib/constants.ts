@@ -7,7 +7,7 @@ export const firebaseConfig = {
   appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID || "1:528680834479:web:41fe2ca649ce4c286c8b5a"
 };
 
-export const GEMINI_API_KEY = process.env.NEXT_PUBLIC_GEMINI_API_KEY || "AIzaSyDaE1ZS2Jd6jtcR2bD6JaDP86LJ0f24kiY";
+export const GEMINI_API_KEY = process.env.GEMINI_API_KEY || "AIzaSyDaE1ZS2Jd6jtcR2bD6JaDP86LJ0f24kiY";
 
 export const TEAMS = ['T2 Order Support', 'Social Media Team', 'T2 Product Support', 'Member Experience Team', 'Unassigned'];
 export const COACH_TYPES = ['Team Leader', 'QA Coach', 'Mentor', 'Managment'];
