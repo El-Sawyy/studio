@@ -59,15 +59,28 @@ const getSheetDataFlow = ai.defineFlow(
   },
   async ({ spreadsheetId, range }) => {
     
-    if (!process.env.GOOGLE_APPLICATION_CREDENTIALS) {
-        throw new Error("Configuration Error: The GOOGLE_APPLICATION_CREDENTIALS environment variable is not set. Please create the google-credentials.json file at the root of the project and place your service account key in it.");
+    const hasJsonCredentials = !!process.env.GOOGLE_CREDENTIALS_JSON;
+    const hasFileCredentials = !!process.env.GOOGLE_APPLICATION_CREDENTIALS;
+
+    if (!hasJsonCredentials && !hasFileCredentials) {
+        throw new Error("Configuration Error: Neither GOOGLE_CREDENTIALS_JSON nor GOOGLE_APPLICATION_CREDENTIALS environment variables are set. Please provide your service account credentials.");
     }
 
     try {
-        const auth = new google.auth.GoogleAuth({
-            keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
-            scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
-        });
+        let auth;
+        if (hasJsonCredentials) {
+             const credentials = JSON.parse(process.env.GOOGLE_CREDENTIALS_JSON!);
+             auth = new google.auth.GoogleAuth({
+                 credentials,
+                 scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+             });
+        } else {
+             auth = new google.auth.GoogleAuth({
+                keyFile: process.env.GOOGLE_APPLICATION_CREDENTIALS,
+                scopes: ['https://www.googleapis.com/auth/spreadsheets.readonly'],
+            });
+        }
+
 
         const sheets = google.sheets({ version: 'v4', auth });
         const response = await sheets.spreadsheets.values.get({
