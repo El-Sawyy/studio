@@ -6,7 +6,7 @@ const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
 const emailFrom = process.env.EMAIL_FROM || 'ahmed.elsawy@tempo.fit';
 
-let transporter: nodemailer.Transporter;
+let transporter: nodemailer.Transporter | null = null;
 
 if (emailUser && emailPass) {
   transporter = nodemailer.createTransport({
@@ -16,8 +16,6 @@ if (emailUser && emailPass) {
       pass: emailPass, // Use an "App Password" from your Google account
     },
   });
-} else {
-  console.warn('EMAIL_USER or EMAIL_PASS not found in environment variables. Email notifications will be disabled.');
 }
 
 type EmailData = {
@@ -61,9 +59,16 @@ Your Management Team
 }
 
 export async function sendNotificationEmail(data: EmailData) {
+  if (!emailUser || !emailPass) {
+    const message = "Email service not configured. The EMAIL_USER and EMAIL_PASS environment variables are missing.";
+    console.warn(message);
+    return { success: false, message };
+  }
+  
   if (!transporter) {
-    console.log('Email notifications disabled. Would have sent:', data);
-    return { success: false, message: "Email service not configured." };
+     const message = "Email transporter is not initialized. Check your email configuration.";
+     console.error(message);
+     return { success: false, message };
   }
 
   const { subject, text, html } = getEmailContent(data);
@@ -80,10 +85,9 @@ export async function sendNotificationEmail(data: EmailData) {
     const info = await transporter.sendMail(msg);
     console.log('Notification email sent to:', data.to, 'Message ID:', info.messageId);
     return { success: true, message: "Email sent successfully." };
-  } catch (error) {
+  } catch (error: any) {
     console.error('Error sending email notification:', error);
     // This is important for debugging. Google might block sign-in attempts.
-    // The user might need to check their Gmail account for security alerts.
-    return { success: false, message: `Failed to send email. Please check server logs and ensure your Gmail account allows less secure apps or has an App Password set up. Error: ${error}` };
+    return { success: false, message: `Failed to send email. Please check server logs and ensure your Gmail account allows less secure apps or has an App Password set up. Error: ${error.message}` };
   }
 }
