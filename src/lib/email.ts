@@ -1,11 +1,23 @@
 'use server';
 
-import sgMail from '@sendgrid/mail';
+import nodemailer from 'nodemailer';
 
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+const emailUser = process.env.EMAIL_USER;
+const emailPass = process.env.EMAIL_PASS;
+const emailFrom = process.env.EMAIL_FROM || emailUser;
+
+let transporter: nodemailer.Transporter;
+
+if (emailUser && emailPass) {
+  transporter = nodemailer.createTransport({
+    service: 'gmail',
+    auth: {
+      user: emailUser,
+      pass: emailPass, // Use an "App Password" from your Google account
+    },
+  });
 } else {
-  console.warn('SENDGRID_API_KEY not found. Email notifications will be disabled.');
+  console.warn('EMAIL_USER or EMAIL_PASS not found in environment variables. Email notifications will be disabled.');
 }
 
 type EmailData = {
@@ -18,11 +30,11 @@ type EmailData = {
 };
 
 function getEmailContent(data: EmailData) {
-  const subject = `New ${data.type} added to your profile`;
+  const subject = `New ${data.type} document added to your profile`;
   const text = `
 Hello ${data.agentName},
 
-A new ${data.type} has been added to your profile.
+A new ${data.type} document has been added to your profile.
 
 Type: ${data.documentType}
 Date: ${data.documentDate}
@@ -35,9 +47,9 @@ Your Management Team
   `;
   const html = `
 <p>Hello ${data.agentName},</p>
-<p>A new <strong>${data.type}</strong> has been added to your profile.</p>
+<p>A new <strong>${data.type} document</strong> has been added to your profile.</p>
 <ul>
-  <li><strong>Type:</strong> ${data.documentType}</li>
+  <li><strong>Document Type:</strong> ${data.documentType}</li>
   <li><strong>Date:</strong> ${data.documentDate}</li>
   <li><strong>Added By:</strong> ${data.createdBy}</li>
 </ul>
@@ -49,25 +61,29 @@ Your Management Team
 }
 
 export async function sendNotificationEmail(data: EmailData) {
-  if (!process.env.SENDGRID_API_KEY) {
+  if (!transporter) {
     console.log('Email notifications disabled. Would have sent:', data);
-    return;
+    return { success: false, message: "Email service not configured." };
   }
 
   const { subject, text, html } = getEmailContent(data);
 
   const msg = {
     to: data.to,
-    from: 'notifications@tempo-triumph.com', // This should be a verified sender in your SendGrid account
+    from: emailFrom,
     subject,
     text,
     html,
   };
 
   try {
-    await sgMail.send(msg);
-    console.log('Notification email sent to:', data.to);
+    const info = await transporter.sendMail(msg);
+    console.log('Notification email sent to:', data.to, 'Message ID:', info.messageId);
+    return { success: true, message: "Email sent successfully." };
   } catch (error) {
     console.error('Error sending email notification:', error);
+    // This is important for debugging. Google might block sign-in attempts.
+    // The user might need to check their Gmail account for security alerts.
+    return { success: false, message: `Failed to send email. Please check server logs and ensure your Gmail account allows less secure apps or has an App Password set up. Error: ${error}` };
   }
 }

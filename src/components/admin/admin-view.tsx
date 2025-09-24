@@ -15,6 +15,8 @@ import { CoachingSectionForAdmin } from './coaching-section-for-admin';
 import DocumentListItem from '@/components/shared/document-list-item';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import PerformanceDashboard from './performance-dashboard';
+import { sendNotificationEmail } from '@/lib/email';
+import { useToast } from "@/hooks/use-toast";
 
 
 export default function AdminView({ user, userRole }: { user: User; userRole: string | null }) {
@@ -31,6 +33,7 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
+    const { toast } = useToast();
 
     const agentsPath = `agents`;
     const getPlansPath = (agentId: string) => `agents/${agentId}/plans`;
@@ -113,6 +116,7 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
         try {
             const dataToSave = { ...data };
             const id = data.id;
+            const isNew = !id;
             delete dataToSave.id;
             
             if (id) {
@@ -125,6 +129,26 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
                      setSelectedMonth(newDate.getMonth());
                      setSelectedYear(newDate.getFullYear());
                      
+                     if (isNew && selectedAgent.email) {
+                        try {
+                            const emailResult = await sendNotificationEmail({
+                                to: selectedAgent.email,
+                                agentName: selectedAgent.name,
+                                type: type as 'coaching' | 'plan' | 'warning',
+                                documentType: data.type || data.sessionType,
+                                documentDate: newDate.toLocaleDateString(),
+                                createdBy: user.email!,
+                            });
+                             if (emailResult.success) {
+                                toast({ title: "Notification Sent", description: `An email has been sent to ${selectedAgent.name}.` });
+                            } else {
+                                toast({ variant: "destructive", title: "Email Failed", description: emailResult.message });
+                            }
+                        } catch (emailError) {
+                            console.error("Email sending failed:", emailError);
+                            toast({ variant: "destructive", title: "Email Failed", description: "Could not send notification email." });
+                        }
+                     }
                  }
             }
             closeModal();
