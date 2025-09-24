@@ -4,7 +4,7 @@ import nodemailer from 'nodemailer';
 
 const emailUser = process.env.EMAIL_USER;
 const emailPass = process.env.EMAIL_PASS;
-const emailFrom = process.env.EMAIL_FROM || emailUser;
+const emailFrom = process.env.EMAIL_FROM || 'ahmed.elsawy@tempo.fit';
 
 let transporter: nodemailer.Transporter;
 
