@@ -17,6 +17,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import PerformanceDashboard from './performance-dashboard';
 import { sendNotificationEmail } from '@/lib/email';
 import { useToast } from "@/hooks/use-toast";
+import { Input } from '@/components/ui/input';
 
 
 export default function AdminView({ user, userRole }: { user: User; userRole: string | null }) {
@@ -33,15 +34,22 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
     const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth());
     const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
     const [expandedTeams, setExpandedTeams] = useState<Record<string, boolean>>({});
+    const [searchQuery, setSearchQuery] = useState('');
     const { toast } = useToast();
 
     const agentsPath = `agents`;
     const getPlansPath = (agentId: string) => `agents/${agentId}/plans`;
     const getWarningsPath = (agentId: string) => `agents/${agentId}/warnings`;
     const getCoachingPath = (agentId: string) => `agents/${agentId}/coaching`;
+
+    const filteredAgents = useMemo(() => {
+        return agents.filter(agent =>
+            agent.name.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+    }, [agents, searchQuery]);
     
     const groupedAgents = useMemo(() => {
-        const groups = agents.reduce((acc, agent) => {
+        const groups = filteredAgents.reduce((acc, agent) => {
             const team = agent.team || 'Unassigned';
             if (!acc[team]) {
                 acc[team] = [];
@@ -50,11 +58,22 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
             return acc;
         }, {} as Record<string, Agent[]>);
         return Object.keys(groups).sort().reduce((acc, key) => ({...acc, [key]: groups[key]}), {});
-    }, [agents]);
+    }, [filteredAgents]);
     
     const toggleTeam = (teamName: string) => {
         setExpandedTeams(prev => ({...prev, [teamName]: !prev[teamName]}));
     };
+    
+    useEffect(() => {
+        if (searchQuery) {
+            const teamNames = Object.keys(groupedAgents);
+            const newExpanded: Record<string, boolean> = {};
+            teamNames.forEach(name => {
+                newExpanded[name] = true;
+            });
+            setExpandedTeams(newExpanded);
+        }
+    }, [searchQuery, groupedAgents]);
 
     const filteredPlans = useMemo(() => {
         if (!plans) return [];
@@ -220,7 +239,14 @@ export default function AdminView({ user, userRole }: { user: User; userRole: st
                           <Button onClick={() => openModal('EDIT_AGENT')} className="w-full mb-4">
                               <UserIcon className="mr-2 h-4 w-4" /> Add New Agent
                           </Button>
-                          {isLoading ? <p>Loading agents...</p> : Object.keys(groupedAgents).map(teamName => (
+                           <div className="px-1 mb-2">
+                                <Input
+                                    placeholder="Search agents..."
+                                    value={searchQuery}
+                                    onChange={(e) => setSearchQuery(e.target.value)}
+                                />
+                            </div>
+                          {isLoading ? <p>Loading agents...</p> : Object.keys(groupedAgents).length === 0 ? <p className='text-center text-muted-foreground py-4'>No agents found.</p> : Object.keys(groupedAgents).map(teamName => (
                               <div key={teamName}>
                                   <button onClick={() => toggleTeam(teamName)} className="w-full flex items-center justify-between p-2 rounded-lg hover:bg-muted text-left font-semibold">
                                       <span>{teamName}</span>
