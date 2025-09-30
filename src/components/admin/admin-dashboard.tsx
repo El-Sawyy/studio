@@ -99,8 +99,35 @@ export default function AdminDashboard({ agents, setSelectedAgent, setView, setA
             }
 
             if (selectedMonth !== -1) {
-                const monthFilter = (item: any) => new Date(item.date || item.startDate).getMonth() === selectedMonth;
-                plans = plans.filter(monthFilter);
+                 const monthFilter = (item: any) => {
+                    const itemDate = new Date(item.date || item.startDate);
+                    return itemDate.getMonth() === selectedMonth;
+                };
+                const activePlanFilter = (plan: PerformancePlan) => {
+                    const planDate = new Date(plan.startDate);
+                    const planMonth = planDate.getMonth();
+                    const planYear = planDate.getFullYear();
+                    
+                    // Check if the plan is in the current month
+                    if (planMonth === selectedMonth && planYear === selectedYear) {
+                        return true;
+                    }
+
+                    // Check if the plan is Active and the selected month is the next month
+                    if (plan.status === 'Active') {
+                        let nextMonth = planMonth + 1;
+                        let nextYear = planYear;
+                        if (nextMonth === 12) {
+                            nextMonth = 0;
+                            nextYear++;
+                        }
+                        return nextMonth === selectedMonth && nextYear === selectedYear;
+                    }
+                    
+                    return false;
+                };
+
+                plans = plans.filter(activePlanFilter);
                 warnings = warnings.filter(monthFilter);
                 coaching = coaching.filter(monthFilter);
             }
