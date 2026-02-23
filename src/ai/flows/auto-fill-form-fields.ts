@@ -179,12 +179,7 @@ function getPromptAndSchema(input: AutoFillFormFieldsInput) {
   }
 
   if (input.mode === 'generate' && wordCount > 0 && wordCount <= 3) {
-    promptText = `You are a professional team leader. The user has provided a keyword: "${sanitizedText}". Your task is to expand this keyword into a meaningful sentence or a short paragraph. The generated text should be relevant to a coaching session, performance improvement plan, or a formal warning.
-
-- If the keyword is positive (e.g., "Good job", "Excellent"), treat it as a strength.
-- If the keyword is negative or an area for improvement (e.g., "Communication", "Tardiness"), treat it as an opportunity or a concern.
-
-Based on your judgment, place the generated content into the most appropriate field within the JSON object (e.g., 'strengths', 'opportunities', 'summaryOfConcerns'). The output must be a valid JSON object following the provided schema. Format the content with professional and encouraging language.`;
+    promptText = `You are a professional team leader. The user has provided a keyword: "${sanitizedText}". Your task is to expand this keyword into a meaningful sentence or a short paragraph. The generated text should be relevant to a coaching session, performance improvement plan, or a formal warning.\n\n- If the keyword is positive (e.g., "Good job", "Excellent"), treat it as a strength.\n- If the keyword is negative or an area for improvement (e.g., "Communication", "Tardiness"), treat it as an opportunity or a concern.\n\nBased on your judgment, place the generated content into the most appropriate field within the JSON object (e.g., 'strengths', 'opportunities', 'summaryOfConcerns'). The output must be a valid JSON object following the provided schema. Format the content with professional and encouraging language.`;
   } else if (input.mode === 'fill') {
     promptText = `You are an expert administrative assistant. Analyze the following text and extract the information into a valid JSON object based on the provided schema. For 'plan' forms, ensure the 'actionPlan' field is an array of objects, with each object having a 'text' and 'completed' property. The 'completed' property should be 'false' by default. It is crucial that you identify and convert bullet points, numbered items, and distinct paragraphs into clean, structured HTML for fields that support it, using tags like <ul>, <ol>, <li>, <p>, and <strong> for bolding. Retain any hyperlinks found in the original text.\n\nText:\n${sanitizedText}`;
   } else { // This covers 'generate' mode for longer inputs
@@ -208,7 +203,11 @@ const autoFillFormFieldsFlow = ai.defineFlow(
       output: { schema },
     });
 
-    return llmResponse.output || {};
+    const output = llmResponse.output;
+    if (!output) {
+      throw new Error('Failed to generate a valid response from the AI model.');
+    }
+    return output;
   }
 );
 
